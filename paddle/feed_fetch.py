@@ -33,6 +33,16 @@ def parse_args():
     return args, parser
 
 
+def draw(block, filename='debug'):
+    '''
+    '''
+    dot_path = './' + filename + '.dot'
+    pad_path = './' + filename + '.pdf'
+    debugger.draw_block_graphviz(block, path=dot_path)
+    cmd = ['dot', '-Tsvg', dot_path, '-o', pdf_path]
+    subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
 def load_inference_model(model_path, model_name, param_name, exe):
     '''
     '''
@@ -73,6 +83,10 @@ def feed_ones(block, feed_target_names, batch_size=1):
         print('feed_name: ', feed_target_name)
         feed_dict[feed_target_name] = fill_ones(feed_target_name, batch_size)
     return feed_dict
+
+
+def feed_files():
+    pass
 
 
 def fetch_tmp_vars(block, fetch_targets, var_names_list=None):
@@ -147,7 +161,10 @@ def fluid_inference_test(model_path, model_name, param_name, arg_name, drawpdf=F
             draw(global_block)
             # print(global_block.vars.keys())
         feed_list = feed_ones(global_block, feed_names, 1)
-        fetch_targets = fetch_tmp_vars(global_block, fetch_targets, [arg_name])
+        if arg_name is None:
+            fetch_targets = fetch_tmp_vars(global_block, fetch_targets)
+        else:
+            fetch_targets = fetch_tmp_vars(global_block, fetch_targets, [arg_name])
         # print(fetch_targets)
         results = exe.run(program=inference_program, feed=feed_list,
                           fetch_list=fetch_targets, return_numpy=False)
