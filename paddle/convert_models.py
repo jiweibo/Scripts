@@ -17,7 +17,6 @@ def parse_args():
 
 def convert():
   exe = fluid.Executor(fluid.CPUPlace())
-  img = np.ones((1, 3, 224, 224), dtype=np.float32)
   
   [inference_program, feed_target_names, fetch_targets] = fluid.io.load_inference_model(dirname=args.dirname, executor=exe, model_filename=args.model_filename, params_filename=args.params_filename)
   
