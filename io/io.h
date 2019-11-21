@@ -1,9 +1,20 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 // todo: A reader compatible image and text
 
+//
+// read txt
+// 1;1;1
+// 2;2;2
+// 3;3;3
+// the inputs_size is 3
+// when batch is 1, the result is {batch_0:[[1] [1] [1]], batch_1:[[2] [2] [2]], batch_2[[3] [3] [3]]}
+// when batch is 2, the result is {batch_0:[[1 2], [1 2], [1 2]], batch_1:[[3],[3],[3]]}
+// when batch is 3, the result is {batch_0:[[1 2 3], [1 2 3], [1 2 3]]}
+//
 class TxtDataReader {
 public:
   TxtDataReader(const std::string &filename, int64_t batch_size,
@@ -14,6 +25,7 @@ public:
     _file.seekg(_file.end);
     _total_length = _file.tellg();
     _file.seekg(_file.beg);
+    reset_current_line();
     read_file_to_vec(start, end);
   }
 

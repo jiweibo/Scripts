@@ -1,1 +1,1 @@
-g++ main.cc -std=c++11 -o demo -lglog -lgflags
+g++ main.cc -std=c++11 -o demo -I/usr/local/include -I/usr/include -L/usr/local/lib -L/usr/lib -lglog -lgflags
