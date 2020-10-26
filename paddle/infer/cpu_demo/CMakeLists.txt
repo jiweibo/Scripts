@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(inference_test CXX C)
 option(WITH_MKL "Compile demo with MKL/OpenBLAS support, default use MKL." ON)
-option(WITH_GPU "Compile demo with GPU/CPU, default use CPU.", OFF)
+option(WITH_GPU "Compile demo with GPU/CPU, default use CPU." OFF)
 option(WITH_STATIC_LIB "Compile demo with static/shared library, default use shared." OFF)
-option(USE_TENSORRT, "COmpile demo with TensorRT.", OFF)
+option(USE_TENSORRT "COmpile demo with TensorRT." OFF)
 
 if (NOT DEFINED PADDLE_LIB)
   message(FATAL_ERROR "please set PADDLE_LIB with -DPADDLE_LIB=/path/paddle/lib")
@@ -23,15 +23,15 @@ include_directories("${PADDLE_LIB}third_party/boost")
 include_directories("${PADDLE_LIB}third_party/eigen3")
 include_directories("${PADDLE_LIB}paddle/include")
 
-include_directories("${PADDLE_LIB_THIRD_PARTY_PATH}zlib/lib")
-include_directories("${PADDLE_LIB_THIRD_PARTY_PATH}protobuf/lib")
-include_directories("${PADDLE_LIB_THIRD_PARTY_PATH}glog/lib")
-include_directories("${PADDLE_LIB_THIRD_PARTY_PATH}gflags/lib")
-include_directories("${PADDLE_LIB_THIRD_PARTY_PATH}xxhash/lib")
-include_directories("${PADDLE_LIB}paddle/lib")
+link_directories("${PADDLE_LIB_THIRD_PARTY_PATH}zlib/lib")
+link_directories("${PADDLE_LIB_THIRD_PARTY_PATH}protobuf/lib")
+link_directories("${PADDLE_LIB_THIRD_PARTY_PATH}glog/lib")
+link_directories("${PADDLE_LIB_THIRD_PARTY_PATH}gflags/lib")
+link_directories("${PADDLE_LIB_THIRD_PARTY_PATH}xxhash/lib")
+link_directories("${PADDLE_LIB}paddle/lib")
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" -g -O0 -std=c++11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 message("flags" ${CMAKE_CXX_FLAGS})
 
 if(WITH_GPU)
@@ -43,7 +43,6 @@ if(USE_TENSORRT AND WITH_GPU)
   link_directories("${TENSORRT_LIB_DIR}")
 endif()
 
-#todo add NGRAP
 set(NGRAPH_PATH "${PADDLE_LIB_THIRD_PARTY_PATH}ngraph")
 if(EXISTS ${NGRAPH_PATH})
   include(GNUInstallDirs)
@@ -51,8 +50,6 @@ if(EXISTS ${NGRAPH_PATH})
   link_directories("${NGRAPH_PATH}/${CMAKE_INSTALL_LIBDIR}")
   set(NGRAPH_LIB ${NGRAPH_PATH}/${CMAKE_INSTALL_LIBDIR}/libngraph${CMAKE_SHARED_LIBRARY_SUFFIX})
 endif()
-
-add_executable(${DEMO_NAME} ${DEMO_NAME}.cc)
 
 if(WITH_MKL)
   set(MATH_LIB_PATH "${PADDLE_LIB_THIRD_PARTY_PATH}mklml")
@@ -77,13 +74,12 @@ endif()
 
 set(EXTERNAL_LIB "-lrt -ldl -lpthread")
 set(DEPS ${DEPS} ${MATH_LIB} ${MKLDNN_LIB} ${NGRAPH_LIB}
-         glog gflags protobuf z xxhash snappy snappystream
+         glog gflags protobuf z xxhash 
          ${EXTERNAL_LIB})
-set(DEPS ${DEPS} libcmt shlwapi)
 
 if(WITH_GPU)
   if(USE_TENSORRT)
-    set(DEPS ${DEPS} ${PADDLE_LIB}/third_party/install/tensorrt/lib/libnvinfer${CMAKE_STATIC_LIBRARY_SUFFIX}))
+    set(DEPS ${DEPS} ${PADDLE_LIB}/third_party/install/tensorrt/lib/libnvinfer${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(DEPS ${DEPS} ${PADDLE_LIB}/third_party/install/tensorrt/lib/libnvinfer_plugin${CMAKE_STATIC_LIBRARY_SUFFIX})
   endif()
   set(DEPS ${DEPS} ${CUDA_LIB}/libcudart${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -91,4 +87,5 @@ if(WITH_GPU)
   set(DEPS ${DEPS} ${CUDA_LIB}/cudnn${CMAKE_STATIC_LIBRARY_SUFFIX} )
 endif()
 
+add_executable(${DEMO_NAME} ${DEMO_NAME}.cc)
 target_link_libraries(${DEMO_NAME} ${DEPS})
