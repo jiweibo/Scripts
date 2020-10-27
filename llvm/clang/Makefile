@@ -7,7 +7,7 @@ endif
 SRC_DIR?=$(PWD)
 LDFLAGS+=$(shell $(LLVM_CONFIG) --ldflags)
 COMMON_FLAGS=-Wall -Wextra
-CXXFLAGS+=$(COMMON_FLAGS)
+CXXFLAGS+=$(COMMON_FLAGS) $(shell $(LLVM_CONFIG) --cxxflags) $(shell $(LLVM_CONFIG) --system-libs)
 CPPFLAGS+=$(shell $(LLVM_CONFIG) --cppflags) -I$(SRC_DIR)
 
 CLANGLIBS = \
@@ -38,7 +38,7 @@ default: $(PROJECT)
 
 $(PROJECT) : $(PROJECT_OBJECTS)
 	@echo Linking $@
-	$(QUIET)$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(CLANGLIBS) $(LLVMLIBS)
+	$(QUIET)$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(CLANGLIBS) $(LLVMLIBS) $(CXXFLAGS)
 
 clean::
 	$(QUIET)rm -f $(PROJECT) $(PROJECT_OBJECTS)
