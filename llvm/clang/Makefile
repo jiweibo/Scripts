@@ -27,18 +27,18 @@ CLANGLIBS = \
 
 LLVMLIBS=$(shell $(LLVM_CONFIG) --libs)
 
-PROJECT=diagnostics
-PROJECT_OBJECTS=diagnostics.o
+#PROJECT=
+#PROJECT_OBJECTS=
 
-default: $(PROJECT)
+default: diagnostics.bin lexer.bin
 
 %.o : %(SRC_DIR)/%.cc
 	@echo Compiling $*.cc
 	$(QUIET)$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $<
 
-$(PROJECT) : $(PROJECT_OBJECTS)
+%.bin : %.o
 	@echo Linking $@
 	$(QUIET)$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(CLANGLIBS) $(LLVMLIBS) $(CXXFLAGS)
 
 clean::
-	$(QUIET)rm -f $(PROJECT) $(PROJECT_OBJECTS)
+	$(QUIET)rm -f *.o *.bin
