@@ -30,7 +30,7 @@ LLVMLIBS=$(shell $(LLVM_CONFIG) --libs)
 #PROJECT=
 #PROJECT_OBJECTS=
 
-default: diagnostics.bin lexer.bin syntax.bin
+default: diagnostics.bin lexer.bin syntax.bin all.bin
 
 %.o : %(SRC_DIR)/%.cc
 	@echo Compiling $*.cc
