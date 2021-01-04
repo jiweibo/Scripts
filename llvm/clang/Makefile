@@ -1,0 +1,44 @@
+LLVM_CONFIG?=llvm-config
+
+ifndef VERBOSE
+#QUIET:=@
+endif
+
+SRC_DIR?=$(PWD)
+LDFLAGS+=$(shell $(LLVM_CONFIG) --ldflags)
+COMMON_FLAGS=-Wall -Wextra
+CXXFLAGS+=$(COMMON_FLAGS) $(shell $(LLVM_CONFIG) --cxxflags) $(shell $(LLVM_CONFIG) --system-libs)
+CPPFLAGS+=$(shell $(LLVM_CONFIG) --cppflags) -I$(SRC_DIR)
+
+CLANGLIBS = \
+	-Wl,--start-group \
+	-lclang \
+	-lclangFrontend \
+	-lclangDriver \
+	-lclangSerialization \
+	-lclangParse \
+	-lclangSema \
+	-lclangAnalysis \
+	-lclangEdit \
+	-lclangAST \
+	-lclangLex \
+	-lclangBasic \
+	-Wl,--end-group
+
+LLVMLIBS=$(shell $(LLVM_CONFIG) --libs)
+
+#PROJECT=
+#PROJECT_OBJECTS=
+
+default: diagnostics.bin lexer.bin syntax.bin all.bin
+
+%.o : %(SRC_DIR)/%.cc
+	@echo Compiling $*.cc
+	$(QUIET)$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $<
+
+%.bin : %.o
+	@echo Linking $@
+	$(QUIET)$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^ $(CLANGLIBS) $(LLVMLIBS) $(CXXFLAGS)
+
+clean::
+	$(QUIET)rm -f *.o *.bin
