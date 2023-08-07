@@ -5,7 +5,6 @@ import argparse
 import paddle
 paddle.enable_static()
 import paddle.fluid as fluid
-from paddle.fluid import debugger
 from paddle.fluid import core
 import subprocess
 
@@ -19,7 +18,6 @@ def parse_args():
   parser.add_argument("--src_params_name", type=str, default='inference.pdiparams', help="params filename")
   parser.add_argument('--dst_model_name', type=str, default='inference.pdmodel', help='model filename')
   parser.add_argument("--dst_params_name", type=str, default='inference.pdiparams', help="params filename")
-  parser.add_argument('--draw', dest='draw', action='store_true', help='draw model')
   args = parser.parse_args()
   return args, parser
 
@@ -33,15 +31,6 @@ def load_inference_model(model_path, model_name, param_name, exe):
     else:
         return fluid.io.load_inference_model(model_path, exe)
 
-def draw(block, filename='debug'):
-    """
-    """
-    dot_path = './' + filename + '.dot'
-    pdf_path = './' + filename + '.pdf'
-    debugger.draw_block_graphviz(block, path=dot_path)
-    cmd = ["dot", "-Tpdf", dot_path, "-o", pdf_path]
-    subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
 def prune(program, feeds, fetches):
     global_block = program.global_block()
     target_vars = [global_block.var(i) for i in fetches]
@@ -51,7 +40,7 @@ def prune(program, feeds, fetches):
     fluid.io.append_fetch_ops(new_program, fetches)
     return new_program
 
-def prune_inference_program(load_path, src_model_name, src_params_name, save_path, dst_model_name, dst_params_name, feed_names, fetch_names, drawpdf=False):
+def prune_inference_program(load_path, src_model_name, src_params_name, save_path, dst_model_name, dst_params_name, feed_names, fetch_names):
     """
     """
     place = fluid.CPUPlace()
@@ -63,11 +52,6 @@ def prune_inference_program(load_path, src_model_name, src_params_name, save_pat
         fetch_targets] = load_inference_model(load_path, src_model_name, src_params_name, exe)
         fetched_vars = [net_program.global_block().var(x) for x in fetch_names]
         new_program = prune(net_program, feed_names, fetch_names)
-
-        # print(new_program)
-        if drawpdf:
-          draw(new_program.global_block(), 'prune_program.pdf')
-          draw(net_program.global_block(), 'source_program.pdf')
 
         if (not os.path.exists(save_path)):
             os.makedirs(save_path)
@@ -83,5 +67,5 @@ if __name__ == "__main__":
   feed_names = args.feed_names.split(':')
   fetch_names = args.fetch_names.split(':')
   
-  prune_inference_program(args.src_dir, args.src_model_name, args.src_params_name, args.dst_dir, args.dst_model_name, args.dst_params_name, feed_names, fetch_names, args.draw)
+  prune_inference_program(args.src_dir, args.src_model_name, args.src_params_name, args.dst_dir, args.dst_model_name, args.dst_params_name, feed_names, fetch_names)
 
